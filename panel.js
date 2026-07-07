@@ -4,50 +4,31 @@ let isSystemAdmin = false;
 let profileKeys = [];
 let profileNames = [];
 let extraConfig = {};
-let config = { baseUrl: '', pid: '', token: '', isLegacy: false };
+let config = { baseUrl: '', pid: '', token: '' };
 
 /**
  * Parse a configuration key into its components.
- * Supports both the new format and the legacy format for backward compatibility.
- *
- * New format:    {baseUrl}|{pid}|{token}           → 3 fields
- * Legacy format: {baseUrl}|||{pid}|{api_token}|    → 6 fields (indices 1,2 empty)
+ * Format: {baseUrl}|{pid}|{token}
  */
 function parseConfigKey(configKey) {
     const parts = configKey.toString().split('|');
 
-    // Legacy format detection: 6+ parts with empty slots at indices 1 and 2
-    if (parts.length >= 6 && parts[1] === '' && parts[2] === '') {
-        return {
-            baseUrl: parts[0],
-            pid: parts[3],
-            token: parts[4],
-            isLegacy: true
-        };
-    }
-
-    // New format: {baseUrl}|{pid}|{token}
     return {
         baseUrl: parts[0],
         pid: parts[1],
-        token: parts[2],
-        isLegacy: false
+        token: parts[2]
     };
 }
 
 /**
  * POST to the REDCap External Module api-actions endpoint.
- *
- * Sends ext_token for new-format keys, api_token for legacy keys,
- * so the EM can validate either type.
  */
 function apiPost(action, extraParams = {}) {
-    const tokenKey = config.isLegacy ? 'api_token' : 'ext_token';
     const body = new URLSearchParams({
         content: 'externalModule',
         prefix: 'browser_extension_support',
         action: action,
-        [tokenKey]: config.token,
+        ext_token: config.token,
         pid: config.pid
     });
 
