@@ -2,65 +2,228 @@
 <html>
 <head>
     <title>REDCap Browser Extension Options</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #c3272b;
+            --primary-hover: #a11e22;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-bg: #dcfce7;
+            --success-border: #86efac;
+            --success-text: #166534;
+        }
+
         body {
-            min-width: 400px;
+            min-width: 450px;
             min-height: 150px;
-            font-family: sans-serif;
-            padding: 10px;
+            margin: 0;
+            padding: 24px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
         }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .header img {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .auto-setup-note {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: #92400e;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(195, 39, 43, 0.15);
+        }
+
+        .hint {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 6px;
+        }
+
+        /* Checkbox styling */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .checkbox-wrapper input {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        /* Buttons */
+        button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        button.primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .delete-profile {
+            background-color: #fee2e2;
+            border-color: #f87171;
+            color: #b91c1c;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .delete-profile:hover {
+            background-color: #fecaca;
+            border-color: #ef4444;
+        }
+
+        #add_profile {
+            width: 100%;
+            border-style: dashed;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        #add_profile:hover {
+            background-color: #fff1f2;
+            border-color: var(--primary);
+        }
+
         .profile-entry {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
         }
+
         .profile-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
+
         .profile-header input {
-            margin-left: 10px;
+            flex: 1;
+            margin-left: 12px;
+            margin-right: 12px;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
         }
-        .delete-profile {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 5px 10px;
-            cursor: pointer;
+        
+        .profile-header input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(195, 39, 43, 0.15);
         }
-        .delete-profile:hover {
-            background-color: #cc0000;
-        }
-        #add_profile {
-            margin-bottom: 15px;
-            padding: 5px 10px;
-        }
-        #save {
-            padding: 5px 15px;
-            font-weight: bold;
-        }
-        .hint {
-            color: #666;
-            font-size: 0.85em;
-            margin-top: 4px;
-        }
-        .auto-setup-note {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 15px;
-            color: #155724;
-            font-size: 0.9em;
+
+        #savedconfirmation {
+            background: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid var(--success-border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-left: 12px;
+            display: inline-flex;
+            align-items: center;
         }
     </style>
 </head>
 <body>
+
+<div class="header">
+    <img src="logo.png" alt="REDCap logo">
+    <h1>Settings</h1>
+</div>
 
 <div class="auto-setup-note">
     <strong>&#x1f4a1; Tip:</strong> You can skip this page! Just navigate to the
@@ -68,28 +231,26 @@
     the extension icon &mdash; it will configure itself automatically.
 </div>
 
-<div id="single_profile_text" style="display:block;">
-    <p>
-    <label>Configuration key:<br/>
-        <textarea id="config_key" rows="2" cols="60" style="margin-top: 5px;"></textarea>
-    </label>
+<div id="single_profile_text" class="form-group" style="display:block;">
+    <label>Configuration Key</label>
+    <textarea id="config_key" rows="2" placeholder="Paste your key here..."></textarea>
     <div class="hint">Get this from the Browser Extension Configuration page in your REDCap project.</div>
-    </p>
 </div>
 
-<p style="margin-top: 20px; margin-bottom: 20px;">
-    <label><input type="checkbox" id="multi_profile"> <strong>Use Multiple Profiles</strong></label>
-</p>
+<div class="checkbox-wrapper">
+    <input type="checkbox" id="multi_profile">
+    <label for="multi_profile" style="margin: 0; cursor: pointer;">Use Multiple Profiles</label>
+</div>
 
-<div id="multi_profile_text" style="display: none;">
+<div id="multi_profile_text" class="form-group" style="display: none;">
     <div id="profiles_container"></div>
     <button id="add_profile">+ Add New Profile</button>
 </div>
 
-<p>
-    <button id="save">Save Settings</button> 
-    <span id="savedconfirmation" style="display:none; color: green; margin-left: 10px; font-weight: bold;">Configuration Saved!</span>
-</p>
+<div style="display: flex; align-items: center; margin-top: 24px;">
+    <button id="save" class="primary">Save Settings</button> 
+    <div id="savedconfirmation" style="display:none;">&#9989; Configuration Saved!</div>
+</div>
 
 <script src="options.js"></script>
 </body>

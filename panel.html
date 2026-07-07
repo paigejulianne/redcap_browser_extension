@@ -1,110 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #c3272b; /* REDCap Red */
+            --primary-hover: #a11e22;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-bg: #dcfce7;
+            --success-border: #86efac;
+            --success-text: #166534;
+        }
+
         body {
-            min-width: 400px;
-            min-height: 200px;
-        }
-
-        .ui-autocomplete, .ui-widget {
-            width: 225px;
-            max-width: 225px;
-            max-height: 100px;
-            overflow-y: visible;
-            /* prevent horizontal scrollbar */
-            overflow-x: hidden;
-        }
-
-        span {
-            border: 0;
+            width: 420px;
+            min-height: 250px;
             margin: 0;
+            padding: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
         }
 
-        #autoSetupBanner {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
         }
 
-        #autoSetupBanner button {
-            margin-top: 5px;
-            font-weight: bold;
+        .header img {
+            width: 50px;
+            height: 50px;
+            margin-right: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        #setupConfirmation {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-            color: #155724;
-            font-weight: bold;
+        .header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
         }
 
+        .header p {
+            margin: 2px 0 0 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(195, 39, 43, 0.15);
+        }
+
+        .action-group {
+            margin-top: 16px;
+        }
+
+        .action-group-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        button.primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        button.primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        /* Banner styles */
+        .banner {
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+            color: var(--success-text);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .banner button {
+            margin-top: 8px;
+            background: white;
+            border-color: var(--success-border);
+            color: var(--success-text);
+        }
+        .banner button:hover {
+            background: #f0fdf4;
+        }
+
+        /* Override jQuery UI */
+        .ui-autocomplete {
+            max-width: 388px;
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            padding: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+        .ui-menu-item-wrapper {
+            padding: 6px 10px !important;
+            border-radius: 4px;
+        }
+        .ui-menu-item-wrapper.ui-state-active {
+            background: #f1f5f9 !important;
+            border: 1px solid transparent !important;
+            color: var(--primary) !important;
+            font-weight: 500;
+        }
     </style>
 
     <script src="lib/jquery-3.7.0.min.js"></script>
     <script src="lib/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="lib/jquery-ui.min.css" />
-
-
 </head>
 <body>
-<p></p>
-<img src="logo.png" alt="REDCap logo" width="100" height="100" align="left">
 
-<!-- One-click auto-setup banner (hidden by default, shown when a REDCap config page is detected) -->
-<div id="autoSetupBanner" style="display:none; clear: both;">
-    <strong>&#128279; REDCap server detected!</strong><br/>
-    <small id="detectedServer"></small><br/>
-    <button id="autoConfigureBtn">Configure Extension</button>
+<div class="header">
+    <img src="logo.png" alt="REDCap logo">
+    <div>
+        <h1>REDCap Navigator</h1>
+        <p>Quick access to your projects</p>
+    </div>
 </div>
 
-<!-- Success confirmation after auto-configure -->
-<div id="setupConfirmation" style="display:none; clear: both;">
+<div id="autoSetupBanner" class="banner" style="display:none;">
+    <div style="font-weight: 600; margin-bottom: 2px;">&#128279; REDCap server detected!</div>
+    <div style="font-size: 0.8rem; opacity: 0.9;" id="detectedServer"></div>
+    <button id="autoConfigureBtn" style="width: 100%;">Configure Extension</button>
+</div>
+
+<div id="setupConfirmation" class="banner" style="display:none; font-weight: 600;">
     &#9989; Extension configured successfully!
 </div>
 
-<div class="ui-widget" id="profileoptions" style="display:none;">
-    <label for="profile"><strong>Profile:</strong></label>
-    <input id="profile">
-</div>
-<p></p>
-
-<div class="ui-widget">
-    <label for="projects"><strong>Project ID:</strong></label>
-    <input id="projects">
-</div>
-<br/>
-<div class="ui-widget" id="record_information" style="display: block;">
-    <label for="record"><strong>Record:</strong></label>
-    <input id="record" type="text" name="record" size="5"/>
-    <button id="goToRecord">Go</button> or <button id="newRecord">New</button>
+<div class="form-group" id="profileoptions" style="display:none;">
+    <label for="profile">Profile</label>
+    <input id="profile" type="text" placeholder="Select profile...">
 </div>
 
+<div class="form-group">
+    <label for="projects">Project</label>
+    <input id="projects" type="text" placeholder="Search for a project...">
+</div>
 
-<span id="projectLinks" style="display: none;">
-<br/><strong>Project Actions: </strong><br>
+<div class="form-group" id="record_information" style="display: block;">
+    <label for="record">Record ID</label>
+    <div style="display: flex; gap: 8px;">
+        <input id="record" type="text" name="record" placeholder="e.g. 101" style="flex: 1;"/>
+        <button id="goToRecord" class="primary">Go</button>
+        <button id="newRecord">New</button>
+    </div>
+</div>
 
-<button id="goToHome">Home</button>
+<div id="projectLinks" class="action-group" style="display: none;">
+    <div class="action-group-title">Project Actions</div>
+    <div class="button-row">
+        <button id="goToHome">Home</button>
+        <button id="goToUserAdmin" style="display: none;">User Rights</button>
+        <button id="goToDesign" style="display: none;">Designer</button>
+    </div>
+</div>
 
-    <button id="goToUserAdmin" style="display: none;">Users</button>
-<button id="goToDesign" style="display: none;">Designer</button>
-</span>
-
-<span id="adminLinks" style="display: none;">
-    <br/><br/>
-<strong>System Actions: </strong><br/>
-<button id="addUser">New User</button>  <button id="searchUsers">Search Users</button> <button id="manageEMs">External Modules</button>
-</span>
-
-</body>
+<div id="adminLinks" class="action-group" style="display: none;">
+    <div class="action-group-title">System Actions</div>
+    <div class="button-row">
+        <button id="addUser">New User</button>
+        <button id="searchUsers">Search Users</button>
+        <button id="goToToDoList">To-Do List</button>
+    </div>
+</div>
 
 <script src="panel.js"></script>
 
-
-
+</body>
 </html>

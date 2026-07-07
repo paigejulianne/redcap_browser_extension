@@ -326,9 +326,9 @@ addClickListener('addUser', () => {
     chrome.tabs.create({ url });
 });
 
-addClickListener('manageEMs', () => {
+addClickListener('goToToDoList', () => {
     checkForDefaultProfile();
-    const url = `${getBaseUrl()}/ExternalModules/manager/control_center.php`;
+    const url = `${getBaseUrl()}/ToDoList/index.php`;
     chrome.tabs.create({ url });
 });
 
