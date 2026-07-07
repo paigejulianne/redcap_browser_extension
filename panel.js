@@ -135,6 +135,17 @@ async function loadConfig(configKey) {
 }
 
 async function runMain() {
+    // --- Step 0: Open in New Tab Setting ---
+    const tabSetting = await chrome.storage.sync.get('openInNewTab');
+    const newTabCheckbox = document.getElementById('openInNewTab');
+    if (newTabCheckbox) {
+        // Default to true if not set
+        newTabCheckbox.checked = tabSetting.openInNewTab !== false;
+        newTabCheckbox.addEventListener('change', async (e) => {
+            await chrome.storage.sync.set({ openInNewTab: e.target.checked });
+        });
+    }
+
     // --- Step 1: Check the current tab for one-click auto-configuration ---
     const autoConfig = await checkForAutoConfig();
 
@@ -292,6 +303,16 @@ function getBaseUrl() {
     return `${config.baseUrl}redcap_v${extraConfig.redcap_version}`;
 }
 
+function openUrl(url) {
+    const isNewTab = document.getElementById('openInNewTab')?.checked !== false;
+    if (isNewTab) {
+        chrome.tabs.create({ url });
+    } else {
+        chrome.tabs.update({ url });
+        window.close(); // Close the extension popup
+    }
+}
+
 const addClickListener = (id, callback) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', callback);
@@ -303,7 +324,7 @@ addClickListener('goToRecord', () => {
     if (!projectId) return;
     const recordId = $('#record').val();
     const url = `${getBaseUrl()}/DataEntry/record_home.php?pid=${projectId}&id=${recordId}`;
-    chrome.tabs.create({ url });
+    openUrl(url);
 });
 
 addClickListener('goToUserAdmin', () => {
@@ -311,7 +332,7 @@ addClickListener('goToUserAdmin', () => {
     const projectId = $('#projects').data('pid');
     if (!projectId) return;
     const url = `${getBaseUrl()}/UserRights/index.php?pid=${projectId}`;
-    chrome.tabs.create({ url });
+    openUrl(url);
 });
 
 addClickListener('goToHome', () => {
@@ -319,7 +340,7 @@ addClickListener('goToHome', () => {
     const projectId = $('#projects').data('pid');
     if (!projectId) return;
     const url = `${getBaseUrl()}/index.php?pid=${projectId}`;
-    chrome.tabs.create({ url });
+    openUrl(url);
 });
 
 addClickListener('goToCodebook', () => {
@@ -327,13 +348,13 @@ addClickListener('goToCodebook', () => {
     const projectId = $('#projects').data('pid');
     if (!projectId) return;
     const url = `${getBaseUrl()}/Design/data_dictionary_codebook.php?pid=${projectId}`;
-    chrome.tabs.create({ url });
+    openUrl(url);
 });
 
 addClickListener('addUser', () => {
     checkForDefaultProfile();
     const url = `${getBaseUrl()}/ControlCenter/create_user.php`;
-    chrome.tabs.create({ url });
+    openUrl(url);
 });
 
 addClickListener('goToToDoList', () => {

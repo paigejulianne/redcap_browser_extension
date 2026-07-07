@@ -194,11 +194,17 @@
 </head>
 <body>
 
-<div class="header">
-    <img src="logo.png" alt="REDCap logo">
-    <div>
-        <h1>REDCap Navigator</h1>
-        <p>Quick access to your projects</p>
+<div class="header" style="justify-content: space-between;">
+    <div style="display: flex; align-items: center;">
+        <img src="logo.png" alt="REDCap logo">
+        <div>
+            <h1>REDCap Navigator</h1>
+            <p>Quick access to your projects</p>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="openInNewTab" checked style="margin: 0; cursor: pointer;">
+        <label for="openInNewTab" style="margin: 0; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); cursor: pointer; white-space: nowrap;">New Tab</label>
     </div>
 </div>
 
