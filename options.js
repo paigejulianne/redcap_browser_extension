@@ -1,70 +1,129 @@
-let profile_keys = [];
-let profile_names = [];
+let profileKeys = [];
+let profileNames = [];
 
 async function saveOptions() {
-    var configKey = document.getElementById('config_key').value;
-    await chrome.storage.sync.set({'config_key': configKey});
+    const configKey = document.getElementById('config_key').value;
+    await chrome.storage.sync.set({ config_key: configKey });
     await saveProfiles();
-    document.getElementById('savedconfirmation').style.display = "inline-block";
+    
+    const confirmation = document.getElementById('savedconfirmation');
+    confirmation.style.display = 'inline-block';
+    setTimeout(() => { confirmation.style.display = 'none'; }, 3000);
 }
 
 async function restoreOptions() {
-    chrome.storage.sync.get('config_key', function(data) {
-        if (data.config_key !== undefined) {
-            document.getElementById('config_key').value = data.config_key;
-        }
-    });
-    chrome.storage.sync.get('multi_profile', function(data) {
-        document.getElementById("multi_profile").checked = data.multi_profile;
-        if (data.multi_profile == true) {
-            showMultiProfile();
-            restoreProfiles();
-        }
-    });
+    const data = await chrome.storage.sync.get(['config_key', 'multi_profile']);
+    
+    if (data.config_key !== undefined) {
+        document.getElementById('config_key').value = data.config_key;
+    }
+    
+    document.getElementById('multi_profile').checked = data.multi_profile || false;
+    
+    await restoreProfiles();
+    showMultiProfile();
 }
 
-
 async function saveProfiles() {
-    for (var i = 0; i < 5; i++) {
-        profile_keys[i] = document.getElementById('profile_key_' + i).value;
-        profile_names[i] = document.getElementById('profile_name_' + i).value;
-    }
-    await chrome.storage.sync.set({'profile_keys': profile_keys});
-    await chrome.storage.sync.set({'profile_names': profile_names});
+    const profileContainers = document.querySelectorAll('.profile-entry');
+    profileKeys = [];
+    profileNames = [];
+    
+    profileContainers.forEach(container => {
+        profileKeys.push(container.querySelector('.profile-key').value);
+        profileNames.push(container.querySelector('.profile-name').value);
+    });
+    
+    await chrome.storage.sync.set({ profile_keys: profileKeys, profile_names: profileNames });
 }
 
 async function restoreProfiles() {
-    profile_keys = await chrome.storage.sync.get('profile_keys');
-    profile_names = await chrome.storage.sync.get('profile_names');
-    for (var i = 0; i < 5; i++) {
-        var profileKey = document.getElementById('profile_key_' + i).value = profile_keys.profile_keys[i];
-        var profileName = document.getElementById('profile_name_' + i).value = profile_names.profile_names[i];
+    const data = await chrome.storage.sync.get(['profile_keys', 'profile_names']);
+    profileKeys = data.profile_keys || [];
+    profileNames = data.profile_names || [];
+    
+    const container = document.getElementById('profiles_container');
+    container.innerHTML = '';
+    
+    if (profileKeys.length === 0) {
+        addProfileEntry('', '', true);
+    } else {
+        for (let i = 0; i < profileKeys.length; i++) {
+            addProfileEntry(profileNames[i], profileKeys[i], i === 0);
+        }
     }
+}
+
+function addProfileEntry(name = '', key = '', isDefault = false) {
+    const container = document.getElementById('profiles_container');
+    const div = document.createElement('div');
+    div.className = 'profile-entry';
+    
+    const nameLabelText = isDefault ? 'Profile Name (default profile):' : 'Profile Name:';
+    
+    div.innerHTML = `
+        <div class="profile-header">
+            <label>${nameLabelText}
+                <input type="text" class="profile-name" size="20" value="${name}" />
+            </label>
+            ${!isDefault ? '<button class="delete-profile">Delete</button>' : ''}
+        </div>
+        <label>Configuration Key:<br/>
+            <textarea class="profile-key" rows="2" cols="60" style="margin-top: 5px;">${key}</textarea>
+        </label>
+    `;
+    
+    if (!isDefault) {
+        div.querySelector('.delete-profile').addEventListener('click', (e) => {
+            e.preventDefault();
+            div.remove();
+        });
+    }
+    
+    container.appendChild(div);
 }
 
 async function showMultiProfile() {
-    var multiProfile = document.getElementById("multi_profile");
-    var multiProfileText = document.getElementById("multi_profile_text");
-    var singleProfileText = document.getElementById("single_profile_text");
-    var profileOne = document.getElementById("profile_key_0");
-    var singleProfile = document.getElementById("config_key");
-    var body = document.getElementsByTagName("body")[0];
-    if (multiProfile.checked == true){
-        multiProfileText.style.display = "block";
-        body.style.height = "500px";
-        singleProfileText.style.display = "none";
-        profileOne.value = singleProfile.value;
-        await chrome.storage.sync.set({'multi_profile': true});
-    } else {
-        multiProfileText.style.display = "none";
-        body.style.height = "150px";
-        singleProfileText.style.display = "block";
-        singleProfile.value = profileOne.value;
-        await chrome.storage.sync.set({'multi_profile': false});
-    }
-}
+    const isMultiProfile = document.getElementById('multi_profile').checked;
+    const multiProfileText = document.getElementById('multi_profile_text');
+    const singleProfileText = document.getElementById('single_profile_text');
+    const singleProfile = document.getElementById('config_key');
+    const body = document.getElementsByTagName('body')[0];
 
+    const getFirstProfileKey = () => document.querySelector('.profile-key');
+
+    if (isMultiProfile) {
+        multiProfileText.style.display = 'block';
+        singleProfileText.style.display = 'none';
+        body.style.height = 'auto';
+        
+        const firstProfileKey = getFirstProfileKey();
+        if (firstProfileKey && singleProfile.value.trim() !== '') {
+            // Only overwrite if it's currently empty so we don't accidentally wipe it
+            if (firstProfileKey.value.trim() === '') {
+                firstProfileKey.value = singleProfile.value;
+            }
+        }
+    } else {
+        multiProfileText.style.display = 'none';
+        singleProfileText.style.display = 'block';
+        body.style.height = '150px';
+        
+        const firstProfileKey = getFirstProfileKey();
+        if (firstProfileKey && firstProfileKey.value.trim() !== '') {
+            if (singleProfile.value.trim() === '') {
+                singleProfile.value = firstProfileKey.value;
+            }
+        }
+    }
+    
+    await chrome.storage.sync.set({ multi_profile: isMultiProfile });
+}
 
 document.getElementById('save').addEventListener('click', saveOptions);
 document.getElementById('multi_profile').addEventListener('click', showMultiProfile);
+document.getElementById('add_profile').addEventListener('click', (e) => {
+    e.preventDefault();
+    addProfileEntry();
+});
 document.addEventListener('DOMContentLoaded', restoreOptions);

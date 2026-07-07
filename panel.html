@@ -21,6 +21,29 @@
             margin: 0;
         }
 
+        #autoSetupBanner {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #autoSetupBanner button {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        #setupConfirmation {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #155724;
+            font-weight: bold;
+        }
+
     </style>
 
     <script src="lib/jquery-3.7.0.min.js"></script>
@@ -32,6 +55,18 @@
 <body>
 <p></p>
 <img src="logo.png" alt="REDCap logo" width="100" height="100" align="left">
+
+<!-- One-click auto-setup banner (hidden by default, shown when a REDCap config page is detected) -->
+<div id="autoSetupBanner" style="display:none; clear: both;">
+    <strong>&#128279; REDCap server detected!</strong><br/>
+    <small id="detectedServer"></small><br/>
+    <button id="autoConfigureBtn">Configure Extension</button>
+</div>
+
+<!-- Success confirmation after auto-configure -->
+<div id="setupConfirmation" style="display:none; clear: both;">
+    &#9989; Extension configured successfully!
+</div>
 
 <div class="ui-widget" id="profileoptions" style="display:none;">
     <label for="profile"><strong>Profile:</strong></label>

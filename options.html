@@ -6,63 +6,90 @@
         body {
             min-width: 400px;
             min-height: 150px;
+            font-family: sans-serif;
+            padding: 10px;
+        }
+        .profile-entry {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .profile-header input {
+            margin-left: 10px;
+        }
+        .delete-profile {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .delete-profile:hover {
+            background-color: #cc0000;
+        }
+        #add_profile {
+            margin-bottom: 15px;
+            padding: 5px 10px;
+        }
+        #save {
+            padding: 5px 15px;
+            font-weight: bold;
+        }
+        .hint {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+        .auto-setup-note {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            color: #155724;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
 
-<span id="single_profile_text" style="display:block;">
-    <p>
-    <label>Your unique configuration key:<br/>
-        <textarea id="config_key" rows="2" cols="60"></textarea>
-    </label>
-    </p>
-</span>
+<div class="auto-setup-note">
+    <strong>&#x1f4a1; Tip:</strong> You can skip this page! Just navigate to the
+    <em>Browser Extension Configuration</em> page in your REDCap project and click
+    the extension icon &mdash; it will configure itself automatically.
+</div>
 
-<p>
-    <label><input type="checkbox" id="multi_profile"> Use Multiple Profiles</label>
+<div id="single_profile_text" style="display:block;">
+    <p>
+    <label>Configuration key:<br/>
+        <textarea id="config_key" rows="2" cols="60" style="margin-top: 5px;"></textarea>
+    </label>
+    <div class="hint">Get this from the Browser Extension Configuration page in your REDCap project.</div>
+    </p>
+</div>
+
+<p style="margin-top: 20px; margin-bottom: 20px;">
+    <label><input type="checkbox" id="multi_profile"> <strong>Use Multiple Profiles</strong></label>
 </p>
 
-<span id="multi_profile_text" style="display: none;">
-    <p><label>Profile Name:<br/>
-        <input type="text" id="profile_name_0" size="15" /> (this is your default profile)</label><br/>
-    <label>Configuration Key:
-        <textarea id="profile_key_0" rows="2" cols="60"></textarea></label>
+<div id="multi_profile_text" style="display: none;">
+    <div id="profiles_container"></div>
+    <button id="add_profile">+ Add New Profile</button>
+</div>
 
-    </p>
-
-     <p><label>Profile Name:<br/>
-        <input type="text" id="profile_name_1" size="15" /> (leave blank to disable)</label><br/>
-    <label>Configuration Key:
-        <textarea id="profile_key_1" rows="2" cols="60"></textarea></label>
-
-    </p>
-
-     <p><label>Profile Name:<br/>
-        <input type="text" id="profile_name_2" size="15" /> (leave blank to disable)</label><br/>
-    <label>Configuration Key:
-        <textarea id="profile_key_2" rows="2" cols="60"></textarea></label>
-
-    </p>
-
-     <p><label>Profile Name:<br/>
-        <input type="text" id="profile_name_3" size="15" /> (leave blank to disable)</label><br/>
-    <label>Configuration Key:
-        <textarea id="profile_key_3" rows="2" cols="60"></textarea></label>
-
-    </p>
-
-     <p><label>Profile Name:<br/>
-        <input type="text" id="profile_name_4" size="15" /> (leave blank to disable)</label><br/>
-    <label>Configuration Key:
-        <textarea id="profile_key_4" rows="2" cols="60"></textarea></label>
-
-    </p>
-
-
-</span>
-
-<button id="save">Save</button> <span id="savedconfirmation" style="display:none;">Configuration Saved!</span>
+<p>
+    <button id="save">Save Settings</button> 
+    <span id="savedconfirmation" style="display:none; color: green; margin-left: 10px; font-weight: bold;">Configuration Saved!</span>
+</p>
 
 <script src="options.js"></script>
 </body>
