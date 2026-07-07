@@ -100,7 +100,17 @@ function setupProjectAutocomplete() {
                 .then(data => response(data))
                 .catch(() => response([]));
         },
-        minLength: 1
+        minLength: 1,
+        select: function(event, ui) {
+            event.preventDefault(); // Prevent value from being inserted into input
+            $(this).val(ui.item.label); // Insert the project title
+            $(this).data('pid', ui.item.value); // Store the project ID
+            changeProjects(); // Trigger immediately!
+        },
+        focus: function(event, ui) {
+            event.preventDefault(); // Prevent value from being inserted on hover
+            $(this).val(ui.item.label);
+        }
     });
 }
 
@@ -228,7 +238,9 @@ async function getExtraConfig() {
 }
 
 async function changeProjects() {
-    const projectId = document.getElementById('projects').value;
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
+
     document.getElementById('projectLinks').style.display = 'block';
 
     if (extraConfig.system_admin) {
@@ -265,8 +277,14 @@ if (profileEl) {
 
 const projectsEl = document.getElementById('projects');
 if (projectsEl) {
-    projectsEl.addEventListener('change', changeProjects);
-    projectsEl.addEventListener('blur', changeProjects);
+    // We handle the immediate change in the autocomplete select event now,
+    // but keep blur/change just in case the input gets cleared.
+    projectsEl.addEventListener('change', () => {
+        if (!projectsEl.value) {
+            $('#projects').removeData('pid');
+            document.getElementById('projectLinks').style.display = 'none';
+        }
+    });
     projectsEl.addEventListener('click', checkForDefaultProfile);
 }
 
@@ -281,7 +299,8 @@ const addClickListener = (id, callback) => {
 
 addClickListener('goToRecord', () => {
     checkForDefaultProfile();
-    const projectId = $('#projects').val();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
     const recordId = $('#record').val();
     const url = `${getBaseUrl()}/DataEntry/record_home.php?pid=${projectId}&id=${recordId}`;
     chrome.tabs.create({ url });
@@ -289,15 +308,25 @@ addClickListener('goToRecord', () => {
 
 addClickListener('goToUserAdmin', () => {
     checkForDefaultProfile();
-    const projectId = $('#projects').val();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
     const url = `${getBaseUrl()}/UserRights/index.php?pid=${projectId}`;
     chrome.tabs.create({ url });
 });
 
 addClickListener('goToHome', () => {
     checkForDefaultProfile();
-    const projectId = $('#projects').val();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
     const url = `${getBaseUrl()}/index.php?pid=${projectId}`;
+    chrome.tabs.create({ url });
+});
+
+addClickListener('goToCodebook', () => {
+    checkForDefaultProfile();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
+    const url = `${getBaseUrl()}/Design/data_dictionary_codebook.php?pid=${projectId}`;
     chrome.tabs.create({ url });
 });
 
@@ -315,7 +344,8 @@ addClickListener('goToToDoList', () => {
 
 addClickListener('goToDesign', () => {
     checkForDefaultProfile();
-    const projectId = $('#projects').val();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
     const url = `${getBaseUrl()}/Design/online_designer.php?pid=${projectId}`;
     chrome.tabs.create({ url });
 });
@@ -328,7 +358,8 @@ addClickListener('searchUsers', () => {
 
 addClickListener('newRecord', async () => {
     checkForDefaultProfile();
-    const projectId = $('#projects').val();
+    const projectId = $('#projects').data('pid');
+    if (!projectId) return;
     try {
         const result = await apiPost('newrec', { target_project: projectId });
         const url = `${getBaseUrl()}/DataEntry/record_home.php?auto=1&pid=${projectId}&id=${result.record_id}`;
