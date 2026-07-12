@@ -65,6 +65,11 @@ async function checkForAutoConfig() {
             return null;
         }
 
+        // Only run detection on URLs that look like REDCap pages
+        if (!tab.url.toLowerCase().includes('redcap')) {
+            return null;
+        }
+
         const results = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => {
