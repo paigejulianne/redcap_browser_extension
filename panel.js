@@ -95,7 +95,7 @@ async function checkForAutoConfig() {
 }
 
 /**
- * Configure jQuery UI Autocomplete on the projects input.
+ * Configure jQuery UI Autocomplete on the project input.
  * Uses a function-based source that POSTs to the api-actions endpoint.
  */
 function setupProjectAutocomplete() {
@@ -169,6 +169,15 @@ async function runMain() {
 
                 document.getElementById('autoConfigureBtn').addEventListener('click', async () => {
                     await chrome.storage.sync.set({ config_key: newKey });
+                    let profiles = [];
+
+                    if (existing)  {
+                        profiles.push(existing.config_key);
+                        profiles.push(newKey);
+                        chrome.storage.sync.set({'profile_keys': profiles});
+                        chrome.storage.sync.set({'multi_profile': true});
+                    }
+
                     banner.style.display = 'none';
 
                     const confirmEl = document.getElementById('setupConfirmation');
