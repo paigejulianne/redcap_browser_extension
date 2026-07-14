@@ -35,6 +35,7 @@ async function saveProfiles() {
     });
     
     await chrome.storage.sync.set({ profile_keys: profileKeys, profile_names: profileNames });
+    await chrome.storage.sync.set({ multi_profile: profileKeys.length + 1 });
 }
 
 async function restoreProfiles() {
