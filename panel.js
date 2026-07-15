@@ -1,5 +1,6 @@
 let baseUrl = '';
-let isMultiProfile = false;
+let showProfileSelector = false;
+let defaultProfileValue = null;
 let isSystemAdmin = false;
 let profileKeys = [];
 let profileNames = [];
@@ -18,6 +19,36 @@ function parseConfigKey(configKey) {
         pid: parts[1],
         token: parts[2]
     };
+}
+
+/**
+ * Derive a human-friendly server name from a base URL
+ * (e.g. "https://research.paigejulianne.com/redcap/" -> "research.paigejulianne.com").
+ */
+function serverNameFromUrl(url) {
+    try {
+        return new URL(url).hostname;
+    } catch (e) {
+        return url || '';
+    }
+}
+
+/**
+ * One-time migration: fold any legacy single `config_key` into the profiles
+ * dictionary and drop the now-unused single-key / multi_profile settings.
+ */
+async function migrateLegacyConfig() {
+    const data = await chrome.storage.sync.get(['config_key', 'profile_keys']);
+
+    if (data.config_key && (!data.profile_keys || data.profile_keys.length === 0)) {
+        const key = data.config_key;
+        await chrome.storage.sync.set({
+            profile_keys: [key],
+            profile_names: [serverNameFromUrl(parseConfigKey(key).baseUrl)]
+        });
+    }
+
+    await chrome.storage.sync.remove(['config_key', 'multi_profile']);
 }
 
 /**
@@ -151,15 +182,22 @@ async function runMain() {
         });
     }
 
+    // Fold any legacy single-key config into the profiles dictionary.
+    await migrateLegacyConfig();
+
+    // Load saved profiles
+    const profileData = await chrome.storage.sync.get(['profile_keys', 'profile_names']);
+    profileKeys = profileData.profile_keys || [];
+    profileNames = profileData.profile_names || [];
+
     // --- Step 1: Check the current tab for one-click auto-configuration ---
     const autoConfig = await checkForAutoConfig();
 
     if (autoConfig) {
         const newKey = `${autoConfig.baseUrl}|${autoConfig.pid}|${autoConfig.token}`;
 
-        // Only show the banner if this key isn't already saved
-        const existing = await chrome.storage.sync.get('config_key');
-        if (existing.config_key !== newKey) {
+        // Only show the banner if this key isn't already saved as a profile
+        if (!profileKeys.includes(newKey)) {
             const banner = document.getElementById('autoSetupBanner');
             const serverLabel = document.getElementById('detectedServer');
 
@@ -168,15 +206,13 @@ async function runMain() {
                 banner.style.display = 'block';
 
                 document.getElementById('autoConfigureBtn').addEventListener('click', async () => {
-                    await chrome.storage.sync.set({ config_key: newKey });
-                    let profiles = [];
-
-                    if (existing)  {
-                        profiles.push(existing.config_key);
-                        profiles.push(newKey);
-                        chrome.storage.sync.set({'profile_keys': profiles});
-                        chrome.storage.sync.set({'multi_profile': true});
-                    }
+                    // Save the detected server as a new profile named after its host
+                    profileKeys.push(newKey);
+                    profileNames.push(serverNameFromUrl(autoConfig.baseUrl));
+                    await chrome.storage.sync.set({
+                        profile_keys: profileKeys,
+                        profile_names: profileNames
+                    });
 
                     banner.style.display = 'none';
 
@@ -186,59 +222,65 @@ async function runMain() {
                         setTimeout(() => { confirmEl.style.display = 'none'; }, 3000);
                     }
 
-                    // Reload the panel with the new config
-                    document.getElementById('profileoptions').style.display = 'none';
-                    isMultiProfile = false;
-                    await loadConfig(newKey);
+                    // Reload the panel with the updated profiles
+                    await activateProfiles(true);
                 });
             }
         }
     }
 
-    // --- Step 2: Load saved configuration ---
-    const data = await chrome.storage.sync.get('multi_profile');
-    isMultiProfile = data.multi_profile || false;
+    // --- Step 2: Activate saved profiles ---
+    await activateProfiles(!!autoConfig);
+}
 
-    if (!isMultiProfile) {
-        const configDataObj = await chrome.storage.sync.get('config_key');
-        const configKey = configDataObj.config_key;
-
-        if (!configKey) {
-            // No saved config — if auto-config is available, wait for user to click;
-            // otherwise redirect to the manual options page.
-            if (!autoConfig) {
-                chrome.runtime.openOptionsPage();
-                window.close();
-            }
-            return;
+/**
+ * Build the list of usable profiles (those with a non-empty key), preserving
+ * their index in the stored arrays so the selector maps back correctly.
+ */
+function getValidProfiles() {
+    const valid = [];
+    for (let i = 0; i < profileKeys.length; i++) {
+        if (profileKeys[i] && profileKeys[i].trim() !== '') {
+            valid.push({
+                value: i + 1,
+                label: profileNames[i] || serverNameFromUrl(parseConfigKey(profileKeys[i]).baseUrl) || `Profile ${i + 1}`
+            });
         }
-
-        document.getElementById('profileoptions').style.display = 'none';
-        await loadConfig(configKey);
-    } else {
-        const profileData = await chrome.storage.sync.get(['profile_keys', 'profile_names']);
-        profileKeys = profileData.profile_keys || [];
-        profileNames = profileData.profile_names || [];
-
-        if (!profileKeys[0]) {
-            if (!autoConfig) {
-                chrome.runtime.openOptionsPage();
-                window.close();
-            }
-            return;
-        }
-
-        document.getElementById('profileoptions').style.display = 'block';
-
-        // Populate the profile autocomplete
-        const options = [];
-        for (let i = 0; i < profileNames.length; i++) {
-            if (profileKeys[i] && profileKeys[i].trim() !== '') {
-                options.push({ value: i + 1, label: profileNames[i] || `Profile ${i + 1}` });
-            }
-        }
-        $('#profile').autocomplete({ source: options });
     }
+    return valid;
+}
+
+/**
+ * Activate the saved profiles: load directly when there's a single profile,
+ * or show the profile selector when there are several. Falls back to the
+ * options page when nothing is configured.
+ */
+async function activateProfiles(hasAutoConfig) {
+    const valid = getValidProfiles();
+
+    if (valid.length === 0) {
+        // Nothing configured — if auto-config is available, wait for the user to
+        // click; otherwise redirect to the manual options page.
+        if (!hasAutoConfig) {
+            chrome.runtime.openOptionsPage();
+            window.close();
+        }
+        return;
+    }
+
+    if (valid.length === 1) {
+        showProfileSelector = false;
+        defaultProfileValue = null;
+        document.getElementById('profileoptions').style.display = 'none';
+        await loadConfig(profileKeys[valid[0].value - 1]);
+        return;
+    }
+
+    // Multiple profiles — show the selector, defaulting to the first valid one
+    showProfileSelector = true;
+    defaultProfileValue = String(valid[0].value);
+    document.getElementById('profileoptions').style.display = 'block';
+    $('#profile').autocomplete({ source: valid });
 }
 
 async function profileOnChange() {
@@ -252,8 +294,8 @@ async function profileOnChange() {
 }
 
 function checkForDefaultProfile() {
-    if (isMultiProfile && !$('#profile').val()) {
-        $('#profile').val('1');
+    if (showProfileSelector && !$('#profile').val() && defaultProfileValue) {
+        $('#profile').val(defaultProfileValue);
         profileOnChange();
     }
 }
